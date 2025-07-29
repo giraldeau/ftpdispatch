@@ -14,13 +14,6 @@ from pyftpdlib.handlers import FTPHandler
 from ftpdispatch.server import DirectoryDispatchAuthorizer, FTPServer
 
 
-def walk_dir(path):
-    for root, _dirs, files in os.walk(path):
-        for file in files:
-            f = Path(root) / file
-            print(f"{f} {f.stat().st_ctime}")  # noqa: T201
-
-
 def find_free_port():
     """Find a free port to use for testing."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -99,12 +92,9 @@ def temp_base_with_dirs():
         base_path = Path(temp_dir)
 
         # Create two directories with different creation times
-        dir_old = base_path / "upload_old"
+        dir_old = base_path / "aaa"
         dir_old.mkdir()
-
-        time.sleep(0.1)  # Ensure different creation times
-
-        dir_new = base_path / "upload_new"
+        dir_new = base_path / "bbb"
         dir_new.mkdir()
 
         yield temp_dir, str(dir_old), str(dir_new)
@@ -119,9 +109,6 @@ def test_ftp_server_file_upload_integration(temp_base_with_dirs):
     server.start()
 
     try:
-        # Give server more time to fully start
-        time.sleep(1.0)
-
         # Connect FTP client
         ftp = FTP()
         ftp.connect(server.host, server.port)
@@ -129,7 +116,7 @@ def test_ftp_server_file_upload_integration(temp_base_with_dirs):
 
         # Create test file content
         test_content = b"Hello from FTP integration test!"
-        test_filename = "test_upload.txt"
+        test_filename = "upload.txt"
 
         # Upload file using STOR command
         from io import BytesIO
@@ -139,8 +126,6 @@ def test_ftp_server_file_upload_integration(temp_base_with_dirs):
 
         # Close FTP connection
         ftp.quit()
-
-        walk_dir(base_dir)
 
         # Verify file was uploaded to the most recent directory (dir_new)
         uploaded_file = Path(dir_new) / test_filename
@@ -164,21 +149,19 @@ def test_ftp_server_directory_listing_integration(temp_base_with_dirs):
     """Integration test: Verify client sees the most recent directory as root."""
     base_dir, dir_old, dir_new = temp_base_with_dirs
 
-    # Create a test file in the most recent directory
-    test_file = Path(dir_new) / "existing_file.txt"
-    test_file.write_text("This file should be visible")
-
     # Create a file in the old directory (should not be visible)
-    old_file = Path(dir_old) / "old_file.txt"
+    old_file = Path(dir_old) / "aaa_file.txt"
     old_file.write_text("This file should NOT be visible")
+
+    # Create a test file in the most recent directory
+    test_file = Path(dir_new) / "bbb_file.txt"
+    test_file.write_text("This file should be visible")
 
     # Start FTP server
     server = FTPServerThread(base_dir)
     server.start()
 
     try:
-        time.sleep(1.0)
-
         # Connect and list directory
         ftp = FTP()
         ftp.connect(server.host, server.port)
@@ -199,10 +182,10 @@ def test_ftp_server_directory_listing_integration(temp_base_with_dirs):
                 filenames.append(parts[-1])
 
         # Verify we see the file from the most recent directory
-        assert "existing_file.txt" in filenames, f"Should see file from recent dir, got: {filenames}"
+        assert "bbb_file.txt" in filenames, f"Should see file from recent dir, got: {filenames}"
 
         # Verify we don't see the file from the old directory
-        assert "old_file.txt" not in filenames, f"Should not see file from old dir, got: {filenames}"
+        assert "aaa_file.txt" not in filenames, f"Should not see file from old dir, got: {filenames}"
 
     finally:
         server.stop()

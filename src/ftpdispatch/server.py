@@ -16,8 +16,7 @@ class DirectoryDispatchAuthorizer(DummyAuthorizer):
 
     def get_home_dir(self, username):
         base_directory = super().get_home_dir(username)
-        homedir = find_most_recent_directory(base_directory)
-        return homedir
+        return find_most_recent_directory(base_directory)
 
 
 def find_most_recent_directory(base_path: str) -> Optional[str]:
@@ -32,8 +31,9 @@ def find_most_recent_directory(base_path: str) -> Optional[str]:
     if not directories:
         return None
 
-    # Sort by creation time (most recent first)
-    most_recent = max(directories, key=lambda d: d.stat().st_ctime)
+    # Sort by name, get the last one
+    most_recent = max(directories, key=lambda d: d.name)
+
     return str(most_recent)
 
 

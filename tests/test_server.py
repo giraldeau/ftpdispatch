@@ -22,12 +22,9 @@ def base_dir_with_subdirs(temp_base_dir):
     base_path = Path(temp_base_dir)
 
     # Create directories with different creation times using sleep for portability
-    dir_old = base_path / "dir_old"
+    dir_old = base_path / "aaa"
     dir_old.mkdir()
-
-    time.sleep(0.1)  # Small but reliable delay
-
-    dir_new = base_path / "dir_new"
+    dir_new = base_path / "bbb"
     dir_new.mkdir()
 
     return temp_base_dir, str(dir_old), str(dir_new)
@@ -71,23 +68,6 @@ def test_find_most_recent_directory_file_not_dir(temp_base_dir):
     assert result is None
 
 
-def test_find_most_recent_directory_identical_timestamps(temp_base_dir):
-    """Test directory selection with directories created rapidly (near-identical times)."""
-    base_path = Path(temp_base_dir)
-
-    # Create directories very quickly (might have same or very close timestamps)
-    dir1 = base_path / "dir_1"
-    dir1.mkdir()
-
-    dir2 = base_path / "dir_2"
-    dir2.mkdir()
-
-    result = find_most_recent_directory(temp_base_dir)
-
-    # Should return one of them - we can't guarantee which due to timing
-    assert result in [str(dir1), str(dir2)]
-
-
 def test_find_most_recent_directory_many_dirs(temp_base_dir):
     """Test directory selection with many directories."""
     base_path = Path(temp_base_dir)
@@ -113,15 +93,10 @@ def test_find_most_recent_directory_mixed_files_and_dirs(temp_base_dir):
     base_path = Path(temp_base_dir)
 
     # Create directories first
-    dir_old = base_path / "old_dir"
+    dir_old = base_path / "aaa_dir"
     dir_old.mkdir()
-
-    time.sleep(0.01)
-
-    dir_new = base_path / "new_dir"
+    dir_new = base_path / "bbb_dir"
     dir_new.mkdir()
-
-    time.sleep(0.01)
 
     # Create files (should be ignored even if more recent)
     file1 = base_path / "recent_file.txt"
