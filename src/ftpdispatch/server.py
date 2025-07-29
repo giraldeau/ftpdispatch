@@ -7,7 +7,7 @@ from typing import Optional
 
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
-from pyftpdlib.servers import FTPServer
+from pyftpdlib.servers import ThreadedFTPServer
 
 
 class DirectoryDispatchAuthorizer(DummyAuthorizer):
@@ -70,7 +70,7 @@ def start_ftp_server(
     handler.banner = "FTP Dispatch Server ready."
 
     # Create server instance and store base directory for handler access
-    server = FTPServer((host, port), handler)
+    server = ThreadedFTPServer((host, port), handler)
     server.base_directory = base_directory
 
     logging.info(f"Starting FTP server on {host}:{port}")

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.servers import ThreadedFTPServer
 
 from ftpdispatch.server import DirectoryDispatchAuthorizer, FTPServer
 
@@ -54,7 +55,7 @@ class FTPServerThread:
             handler.banner = "Test FTP Server ready."
 
             # Create server instance
-            server = FTPServer((self.host, self.port), handler)
+            server = ThreadedFTPServer((self.host, self.port), handler)
             server.base_directory = self.base_directory
 
             # Run server with stop condition
