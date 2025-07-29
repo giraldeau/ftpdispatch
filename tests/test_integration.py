@@ -11,7 +11,7 @@ import pytest
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import ThreadedFTPServer
 
-from ftpdispatch.server import DirectoryDispatchAuthorizer, FTPServer
+from ftpdispatch.server import DirectoryDispatchAuthorizer
 
 
 def find_free_port():
